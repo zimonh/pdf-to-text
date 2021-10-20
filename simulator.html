@@ -1,0 +1,178 @@
+<!DOctyPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"        content="width=device-width,initial-scale=1.0">
+	<meta name="author"         content="ZIMONH">
+	<meta name="description"    content="">
+	<meta name="keywords"        content="">
+	<title>Simulator by ZIMONH</title>
+
+</head>
+<body>
+<style>
+.color-box{
+	width: 1em;
+	height: 1em;
+	border:1px solid gray;
+}
+.color-picker{
+	width: 4em;
+	display: block;
+}
+.color-box{
+	width: 1em;
+	height: 1em;
+	display: inline-block;
+}
+.toolbar{
+	border:2px solid gray;
+	display: inline-block;
+	padding: 0.3em;
+}
+.color-picker button {
+	width: 100%
+
+}
+</style>
+<script type="text/javascript">
+	var canvas, ctx, flag = false,
+		prevX = 0,
+		currX = 0,
+		prevY = 0,
+		currY = 0,
+		dot_flag = false;
+
+	var x = "black",
+		y = 2;
+	
+	function init() {
+		canvas = document.querySelector('.canvas-simulation');
+		ctx = canvas.getContext("2d");
+		w = canvas.width;
+		h = canvas.height;
+	
+		canvas.addEventListener("mousemove", function (e) {
+			findxy('move', e)
+		}, false);
+		canvas.addEventListener("mousedown", function (e) {
+			findxy('down', e)
+		}, false);
+		canvas.addEventListener("mouseup", function (e) {
+			findxy('up', e)
+		}, false);
+		canvas.addEventListener("mouseout", function (e) {
+			findxy('out', e)
+		}, false);
+	}
+	
+	function color(obj) {
+		switch (obj.id) {
+			case "green":
+				x = "green";
+				break;
+			case "blue":
+				x = "blue";
+				break;
+			case "red":
+				x = "red";
+				break;
+			case "yellow":
+				x = "yellow";
+				break;
+			case "orange":
+				x = "orange";
+				break;
+			case "black":
+				x = "black";
+				break;
+			case "white":
+				x = "white";
+				break;
+		}
+		if (x == "white") y = 14;
+		else y = 2;
+	
+	}
+	
+	function draw() {
+		ctx.beginPath();
+		ctx.moveTo(prevX, prevY);
+		ctx.lineTo(currX, currY);
+		ctx.strokeStyle = x;
+		ctx.lineWidth = y;
+		ctx.stroke();
+		ctx.closePath();
+	}
+	
+	function erase() {
+		var m = confirm("Want to clear");
+		if (m) {
+			ctx.clearRect(0, 0, w, h);
+			document.getElementById("canvasimg").style.display = "none";
+		}
+	}
+	
+	// function save() {
+	// 	document.getElementById("canvasimg").style.border = "2px solid";
+	// 	var dataURL = canvas.toDataURL();
+	// 	document.getElementById("canvasimg").src = dataURL;
+	// 	document.getElementById("canvasimg").style.display = "inline";
+	// }
+	
+	function findxy(res, e) {
+		if (res == 'down') {
+			prevX = currX;
+			prevY = currY;
+			currX = e.clientX - canvas.offsetLeft;
+			currY = e.clientY - canvas.offsetTop;
+	
+			flag = true;
+			dot_flag = true;
+			if (dot_flag) {
+				ctx.beginPath();
+				ctx.fillStyle = x;
+				ctx.fillRect(currX, currY, 2, 2);
+				ctx.closePath();
+				dot_flag = false;
+			}
+		}
+		if (res == 'up' || res == "out") {
+			flag = false;
+		}
+		if (res == 'move') {
+			if (flag) {
+				prevX = currX;
+				prevY = currY;
+				currX = e.clientX - canvas.offsetLeft;
+				currY = e.clientY - canvas.offsetTop;
+				draw();
+			}
+		}
+	}
+	</script>
+	<canvas class="canvas-simulation" width="1200px" height="900" style="border:2px solid;"></canvas>
+	<div class="toolbar"> 
+		<div class="color-picker">
+			<b style="display: block;">Color:</b>
+			<hr>
+			<div class="color-box" style="background:green;"	id="green"	onclick="color(this)"></div>
+			<div class="color-box" style="background:blue;"		id="blue"	onclick="color(this)"></div>
+			<div class="color-box" style="background:red;"		id="red"	onclick="color(this)"></div>
+			<div class="color-box" style="background:yellow;"	id="yellow"	onclick="color(this)"></div>
+			<div class="color-box" style="background:orange;"	id="orange"	onclick="color(this)"></div>
+			<div class="color-box" style="background:black;"	id="black"	onclick="color(this)"></div>
+			<div class="color-box" style="background:white;"    id="white"  onclick="color(this)"></div>
+			<!-- <input type="button" value="save" id="btn" size="30" onclick="save()"> -->
+			<hr>
+			<button onclick="erase()">clear</button>
+
+		</div>
+
+		<img id="canvasimg" style="position:absolute;top:10%;left:52%;">
+		
+	</div>
+	<script>init();</script>
+
+</body>
+</html>
