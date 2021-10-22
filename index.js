@@ -7,7 +7,10 @@ const argv = yargs
     .alias('d', 'debug')
     .alias('p', 'page')
     .nargs('p', 1)
-    .describe('p', 'only colect specific page')
+    .describe('p', 'only collect specific page')
+    .alias('f', 'file')
+    .describe('f', 'Input path to file starting with File:/// or http:// or https://')
+	.demandOption(['f'])
     .argv;
 
 function timeout(ms) {
@@ -21,15 +24,15 @@ class Parser {
 		this.maxWaitDuration = 7000;
 	}
 	log(...message){
-		if(this.debug){
-			console.log(...message);
-		}
+		if(!this.debug){ return; }
+		console.log(...message);
 	}
 	startFirefox() {
 		try {
-			return new Builder().forBrowser('firefox').build().then((firefox)=>{
-				this.firefox = firefox;
-			});
+			return new Builder().forBrowser('firefox').build()
+				.then((firefox)=>{
+					this.firefox = firefox;
+				});
 		} catch(e) {
 			console.error(e);
 		}
@@ -42,16 +45,18 @@ class Parser {
 		return this.firefox.get(filePath);
 	}
 	getPageCount(){
-		return this.runScript(`return document.querySelectorAll('.page').length`).then((count)=>{
-			this.pageCount = count;
-			this.log('JavaScript page count: ' + this.pageCount);
-		});
+		return this.runScript(`return document.querySelectorAll('.page').length`)
+			.then((count)=>{
+				this.pageCount = count;
+				this.log('JavaScript page count: ' + this.pageCount);
+			});
 	}
 	getPageElements(){
-		return this.firefox.findElements(By.className('page')).then((pageElements)=>{
-			this.pageElements = pageElements;
-			this.log('Webdriver page count:', pageElements.length);
-		});
+		return this.firefox.findElements(By.className('page'))
+			.then((pageElements)=>{
+				this.pageElements = pageElements;
+				this.log('Webdriver page count:', pageElements.length);
+			});
 	}
 	runScript(...script){
 		return this.firefox.executeScript(...script)
@@ -89,11 +94,7 @@ class Parser {
 	async parse(page){
 		let text = await this.getText(page);
 		let html = await this.getHTML(page);
-		const item = {
-			page,
-			text,
-			html,
-		};
+		const item = { page, text, html };
 		this.pages[page] = item;
 		this.log('text: ' + text);
 		this.log('HTMLlength: ' + html.length);
@@ -101,12 +102,14 @@ class Parser {
 	done(){
 		this.firefox.quit();
 		this.endTime = performance.now();
+		let print = null;
 		if(argv.page !== undefined){
-			console.log(JSON.stringify(this.pages[argv.page]))
+			print = this.pages[argv.page];
 		}else{
 			this.pages.shift();
-			console.log(JSON.stringify(this.pages))
+			print = this.pages;
 		}
+		console.log(JSON.stringify(print))
 		this.log(`Done, pfd parser took ${ Math.round((this.endTime - this.startTime) / 10) / 100 } seconds`)
 	}
 }
@@ -115,7 +118,7 @@ class Parser {
 	const pages = [];
 	const parser = await new Parser(argv.debug);
 	await parser.startFirefox();
-	await parser.visitAddress('File:///Users/zimonh/Sites/pdf-parser/Albert42.pdf');
+	await parser.visitAddress(argv.file); // 'File:///Users/zimonh/Sites/pdf-parser/Albert42.pdf'
 	await timeout(100);
 	await parser.getPageCount();
 	await parser.getPageElements(); // To get the correct \v and \h use the webdriver to get the elements text
