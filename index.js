@@ -1,4 +1,5 @@
 const { Builder, By, Key, until } = require('selenium-webdriver');
+const firefox = require('selenium-webdriver/firefox');
 const { performance } = require('perf_hooks');
 const yargs = require('yargs');
 const argv = yargs
@@ -28,8 +29,12 @@ class Parser {
 		console.log(...message);
 	}
 	startFirefox() {
+		const options = new firefox.Options();
+  		options.addArguments("-headless");
 		try {
-			return new Builder().forBrowser('firefox').build()
+			return new Builder().forBrowser('firefox')
+				.setFirefoxOptions(options)
+				.build()
 				.then((firefox)=>{
 					this.firefox = firefox;
 				});
