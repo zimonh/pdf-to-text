@@ -123,7 +123,12 @@ class Parser {
 	const pages = [];
 	const parser = await new Parser(argv.debug);
 	await parser.startFirefox();
-	await parser.visitAddress(argv.file);
+	try {
+		await parser.visitAddress(argv.file);
+	} catch(e) {
+		console.error('PDF not found:', argv.file)
+		return;
+	}
 	await timeout(100);
 	await parser.getPageCount();
 	await parser.getPageElements(); // To get the correct \v and \h use the webdriver to get the elements text
