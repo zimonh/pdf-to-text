@@ -14,13 +14,8 @@ const argv = yargs
 	.demandOption(['f'])
     .argv;
 
-function timeout(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 class Parser {
-	constructor(debug) {
-		this.debug = debug;
+	constructor() {
 		this.pages = [];
 		this.maxWaitDuration = 7000;
 	}
@@ -42,12 +37,16 @@ class Parser {
 			console.error(e);
 		}
 	}
-	visitAddress(filePath){
+	async timeout(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+	async visitAddress(filePath){
 		this.filePath = filePath;
 		this.startTime = performance.now();
 		this.log('Start Parser for: ' + this.filePath, this.firefox);
 		this.log('Driver: ' + this.firefox);
-		return this.firefox.get(filePath);
+		await this.firefox.get(filePath);
+		await this.timeout(100);
 	}
 	getPageCount(){
 		return this.runScript(`return document.querySelectorAll('.page').length`)
@@ -117,31 +116,31 @@ class Parser {
 		console.log(JSON.stringify(print))
 		this.log(`Done, pfd parser took ${ Math.round((this.endTime - this.startTime) / 10) / 100 } seconds`)
 	}
+	async run(file, onePage = false, debug = false){
+		this.debug = debug;
+		await this.startFirefox();
+		try {
+			await this.visitAddress(file);
+		} catch(e) {
+			console.error('PDF not found:', file)
+			return;
+		}
+		await this.getPageCount();
+		await this.getPageElements(); // To get the correct \v and \h use the webdriver to get the elements text
+		for(let page = 1; page <= this.pageCount; page++){
+			if(onePage && onePage !== page){
+				continue;
+			}
+			await this.loadPage(page);
+			await this.testPageLoaded(page);
+			await this.timeout(100);
+			await this.parse(page);
+		}
+		this.done();
+	}
 }
 
 (async function parse() {
-	const pages = [];
-	const parser = await new Parser(argv.debug);
-	await parser.startFirefox();
-	try {
-		await parser.visitAddress(argv.file);
-	} catch(e) {
-		console.error('PDF not found:', argv.file)
-		return;
-	}
-	await timeout(100);
-	await parser.getPageCount();
-	await parser.getPageElements(); // To get the correct \v and \h use the webdriver to get the elements text
-	for(let page = 1; page <= parser.pageCount; page++){
-		if(argv.page && argv.page !== page){
-			continue;
-		}
-		await parser.loadPage(page);
-		await parser.testPageLoaded(page);
-		await timeout(100);
-		await parser.parse(page);
-	}
-	
-	parser.done();
-
+	const parser = await new Parser();
+	parser.run(argv.file, argv.page, argv.debug);
 })();
