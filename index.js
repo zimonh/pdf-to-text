@@ -43,8 +43,8 @@ class Parser {
 	async visitAddress(filePath){
 		this.filePath = filePath;
 		this.startTime = performance.now();
-		this.log('Start Parser for: ' + this.filePath, this.firefox);
-		this.log('Driver: ' + this.firefox);
+		this.log('Start Parser for:', this.filePath);
+		this.log('Driver:', this.firefox);
 		await this.firefox.get(filePath);
 		await this.timeout(100);
 	}
@@ -52,7 +52,7 @@ class Parser {
 		return this.runScript(`return document.querySelectorAll('.page').length`)
 			.then((count)=>{
 				this.pageCount = count;
-				this.log('JavaScript page count: ' + this.pageCount);
+				this.log('JavaScript page count:', this.pageCount);
 			});
 	}
 	getPageElements(){
@@ -84,7 +84,7 @@ class Parser {
 			return this.runScript("return " + this.getPageSelector(page) + ".querySelector('div').getAttribute('aria-label')")
 			.then((label)=>{
 
-				this.log('Wait: ' + (label === 'Loading…') + ' aria-label: ' + label);
+				this.log('Wait: ' + (label === 'Loading…') + ' aria-label:', label);
 				return label !== 'Loading…';
 			});
 		}, this.maxWaitDuration);
@@ -100,8 +100,8 @@ class Parser {
 		let html = await this.getHTML(page);
 		const item = { page, text, html };
 		this.pages[page] = item;
-		this.log('text: ' + text);
-		this.log('HTMLlength: ' + html.length);
+		this.log('text:', text);
+		this.log('HTMLlength:', html.length);
 	}
 	done(){
 		this.firefox.quit();
