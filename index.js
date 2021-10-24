@@ -133,7 +133,7 @@ class Parser {
 			}
 			await this.loadPage(page);
 			await this.testPageLoaded(page);
-			await this.timeout(100);
+			await this.timeout(300);
 			await this.parse(page);
 		}
 		this.done();
