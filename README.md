@@ -68,9 +68,8 @@ node app.js  -f 'File:///Users/Me/Desktop/book-article-or-whatever.pdf'
 ```
 
 ## Known issues
-* Page returns as empty, but is not the second try. Reason: Sometimes pages have a long load time. To ensure other pages do get loaded, the process will timeout, .
+* Page returns as empty, but is not the second try. Reason: Sometimes pages have a long load time. To ensure other pages do get loaded, the process will timeout.
 * In rare cases, Firefox instances don't quit properly. 
-* You forgot to install Firefox.
 * Your file does not exist. (Try to copy the path from your browser)
 * undefined = Your page does not exist. View the PDF in a browser, search carefully, sometimes there are multiple page numbers on your screen.
 
