@@ -11,14 +11,15 @@ Firefox is as of 2021-10-25.
 
 ## Getting Started
 To turn your PDF into text or HTML:
-* Install Firefox
+* Install [Firefox](https://www.mozilla.org/en-US/firefox/new/)
+* Install [Gekko Driver](https://askubuntu.com/questions/870530/how-to-install-geckodriver-in-ubuntu)
 * See: Installing
 
 ### Dependencies
 * Firefox
+* Gekko Driver
 
 ### Installing
-
 Clone this repository:
 ```
 git clone git@github.com:zimonh/pdf-parser.git
