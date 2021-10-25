@@ -1,5 +1,9 @@
+
 # PDF Parser
+<img src="https://user-images.githubusercontent.com/4648145/138750839-28ef8239-76e1-49ae-bc68-722d22165eea.png" width="248"> 
+
 PDF to text/HTML using the selenium-webdriver.
+
 Example.pdf outputs:
 ```json
 [
