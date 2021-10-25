@@ -54,7 +54,7 @@ npm install
 ```
 
 ### Executing program
-First run in dedub mode, find a nice pdf and run like:
+First run in dedug mode, find a nice pdf and run like:
 ```shell
 node app.js -d -f 'https://anywhere.com/book-article-or-whatever.pdf'
 ```
