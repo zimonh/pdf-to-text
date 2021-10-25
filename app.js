@@ -133,14 +133,12 @@ class Parser {
 			}
 			await this.loadPage(page);
 			await this.testPageLoaded(page);
-			await this.timeout(300);
+			await this.timeout(600);
 			await this.parse(page);
 		}
 		this.done();
 	}
 }
 
-(async function parse() {
-	const parser = await new Parser();
-	parser.run(argv.file, argv.page, argv.debug);
-})();
+const parser = new Parser();
+parser.run(argv.file, argv.page, argv.debug);
