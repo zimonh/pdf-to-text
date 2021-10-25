@@ -1,6 +1,6 @@
 # PDF Parser
 PDF to text/HTML using the selenium-webdriver.
-example.pdf outputs:
+Example.pdf outputs:
 ```json
 [
     {
