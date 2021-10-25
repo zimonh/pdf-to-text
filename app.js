@@ -67,9 +67,9 @@ class Parser {
 	}
 	logPageHeader(page){
 		this.log(`
-##################################################################
-############################ PAGE ${("   " + page).slice(page.toString().length)} ############################
-##################################################################
+${'#'.repeat(66)}
+${'#'.repeat(28)} PAGE ${("   " + page).slice(page.toString().length)} ${'#'.repeat(28)}
+${'#'.repeat(66)}
 		`);
 	}
 	getPageSelector(page){
