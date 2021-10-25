@@ -25,7 +25,7 @@ class Parser {
 	}
 	startFirefox() {
 		const options = new firefox.Options();
-  		options.addArguments("-headless");
+		if(!this.debug){ options.addArguments("-headless"); }
 		try {
 			return new Builder().forBrowser('firefox')
 				.setFirefoxOptions(options)
@@ -34,7 +34,7 @@ class Parser {
 					this.firefox = firefox;
 				});
 		} catch(e) {
-			console.error(e);
+			console.error('Parser startFirefox() failed:', e);
 		}
 	}
 	async timeout(ms) {
