@@ -1,11 +1,8 @@
 {
-  "name": "pdf-parser",
+  "name": "pdf-to-text",
   "version": "1.0.0",
-  "description": "Parses PDF to text, html, links and image data.",
+  "description": "Input path to PDF file, output list with: page number, text and html.",
   "main": "app.js",
-  "scripts": {
-    "test": "test"
-  },
   "author": "ZIMONH",
   "license": "ISC",
   "dependencies": {
