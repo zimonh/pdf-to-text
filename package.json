@@ -6,7 +6,7 @@
   "author": "ZIMONH",
   "license": "ISC",
   "dependencies": {
-    "pdfjs-dist": "^2.10.377",
-    "yargs": "^17.2.1"
+    "get-node-named-cli-args": "^1.0.1",
+    "pdfjs-dist": "^2.10.377"
   }
 }

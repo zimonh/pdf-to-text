@@ -1,12 +1,19 @@
 
-const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
+const getNamedArgs = require('get-node-named-cli-args')
+const myArgs = getNamedArgs();
 
+if(!myArgs.file || myArgs.file.length === 0){
+  console.error('missing \'file="myfile.pdf"\' argument after \'node app.js \'');
+  return;
+}
+
+
+const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
 // Loading file from file system into typed array
-const pdfPath = "/Users/zimonh/Sites/pdf-to-text/202111031622402.pdf";
 
 // Will be using promises to load document, pages and misc data instead of
 // callback.
-const loadingTask = pdfjsLib.getDocument(pdfPath);
+const loadingTask = pdfjsLib.getDocument(myArgs.file);
 loadingTask.promise
   .then(function (doc) {
     const numPages = doc.numPages;
@@ -50,8 +57,12 @@ loadingTask.promise
     };
     // Loading of the first page will wait on metadata and subsequent loadings
     // will wait on the previous pages.
-    for (let i = 1; i <= numPages; i++) {
-      lastPromise = lastPromise.then(loadPage.bind(null, i));
+    if(myArgs.page){
+      lastPromise = lastPromise.then(loadPage.bind(null, myArgs.page));
+    }else{
+      for (let i = 1; i <= numPages; i++) {
+        lastPromise = lastPromise.then(loadPage.bind(null, i));
+      }
     }
     return lastPromise;
   })
