@@ -6,8 +6,7 @@
   "author": "ZIMONH",
   "license": "ISC",
   "dependencies": {
-    "selenium": "^2.20.0",
-    "selenium-webdriver": "^4.0.0",
+    "pdfjs-dist": "^2.10.377",
     "yargs": "^17.2.1"
   }
 }

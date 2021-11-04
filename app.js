@@ -1,144 +1,65 @@
-const { Builder, By, Key, until } = require('selenium-webdriver');
-const firefox = require('selenium-webdriver/firefox');
-const { performance } = require('perf_hooks');
-const yargs = require('yargs');
-const argv = yargs
-    .usage('Usage $0 <command> [options]')
-    .command('parse', 'PDF to Text')
-    .alias('d', 'debug')
-    .alias('p', 'page')
-    .nargs('p', 1)
-    .describe('p', 'only collect specific page')
-    .alias('f', 'file')
-    .describe('f', 'Input path to file starting with File:/// or http:// or https://')
-	.demandOption(['f'])
-    .argv;
 
-class Parser {
-	constructor() {
-		this.pages = [];
-		this.maxWaitDuration = 7000;
-	}
-	log(...message){
-		if(!this.debug){ return; }
-		console.log(...message);
-	}
-	startFirefox() {
-		const options = new firefox.Options();
-		if(!this.debug){ options.addArguments("-headless"); }
-		try {
-			return new Builder().forBrowser('firefox')
-				.setFirefoxOptions(options)
-				.build()
-				.then((firefox)=>{
-					this.firefox = firefox;
-				});
-		} catch(e) {
-			console.error('Parser startFirefox() failed:', e);
-		}
-	}
-	async timeout(ms) {
-		return new Promise(resolve => setTimeout(resolve, ms));
-	}
-	async visitAddress(filePath){
-		this.filePath = filePath;
-		this.startTime = performance.now();
-		this.log('Start Parser for:', this.filePath);
-		this.log('Driver:', this.firefox);
-		await this.firefox.get(filePath);
-		await this.timeout(100);
-	}
-	getPageCount(){
-		return this.runScript(`return document.querySelectorAll('.page').length`)
-			.then((count)=>{
-				this.pageCount = count;
-				this.log('JavaScript page count:', this.pageCount);
-			});
-	}
-	getPageElements(){
-		return this.firefox.findElements(By.className('page'))
-			.then((pageElements)=>{
-				this.pageElements = pageElements;
-				this.log('Webdriver page count:', pageElements.length);
-			});
-	}
-	runScript(...script){
-		return this.firefox.executeScript(...script)
-	}
-	logPageHeader(page){
-		this.log(`
-${'#'.repeat(66)}
-${'#'.repeat(28)} PAGE ${("   " + page).slice(page.toString().length)} ${'#'.repeat(28)}
-${'#'.repeat(66)}
-		`);
-	}
-	getPageSelector(page){
-		return `document.querySelectorAll('.page')[${(page - 1)}]`;
-	}
-	loadPage(page){
-		this.logPageHeader(page);
-	 	return this.runScript(this.getPageSelector(page) + ".scrollIntoView();");
-	}
-	testPageLoaded(page){
-		return this.firefox.wait(() => {
-			return this.runScript("return " + this.getPageSelector(page) + ".querySelector('div').getAttribute('aria-label')")
-			.then((label)=>{
+const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
 
-				this.log('Wait: ' + (label === 'Loading…') + ' aria-label:', label);
-				return label !== 'Loading…';
-			});
-		}, this.maxWaitDuration);
-	}
-	getText(page){
-		return this.pageElements[(page - 1)].getText();
-	}
-	getHTML(page){
-		return this.runScript("return " + this.getPageSelector(page) + ".innerHTML");
-	}
-	async parse(page){
-		let text = await this.getText(page);
-		let html = await this.getHTML(page);
-		const item = { page, text, html };
-		this.pages[page] = item;
-		this.log('text:', text);
-		this.log('HTMLlength:', html.length);
-	}
-	done(){
-		this.firefox.quit();
-		this.endTime = performance.now();
-		let print = null;
-		if(argv.page !== undefined){
-			print = this.pages[argv.page];
-		}else{
-			this.pages.shift();
-			print = this.pages;
-		}
-		console.log(JSON.stringify(print))
-		this.log(`Done, pfd parser took ${ Math.round((this.endTime - this.startTime) / 10) / 100 } seconds`)
-	}
-	async run(file, onePage = false, debug = false){
-		this.debug = debug;
-		await this.startFirefox();
-		try {
-			await this.visitAddress(file);
-		} catch(e) {
-			console.error('PDF not found:', file)
-			return;
-		}
-		await this.getPageCount();
-		await this.getPageElements(); // To get the correct \v and \h use the webdriver to get the elements text
-		for(let page = 1; page <= this.pageCount; page++){
-			if(onePage && onePage !== page){
-				continue;
-			}
-			await this.loadPage(page);
-			await this.testPageLoaded(page);
-			await this.timeout(600);
-			await this.parse(page);
-		}
-		this.done();
-	}
-}
+// Loading file from file system into typed array
+const pdfPath = "/Users/zimonh/Sites/pdf-to-text/202111031622402.pdf";
 
-const parser = new Parser();
-parser.run(argv.file, argv.page, argv.debug);
+// Will be using promises to load document, pages and misc data instead of
+// callback.
+const loadingTask = pdfjsLib.getDocument(pdfPath);
+loadingTask.promise
+  .then(function (doc) {
+    const numPages = doc.numPages;
+    console.log("# Document Loaded");
+    console.log("Number of Pages: " + numPages);
+    console.log();
+
+    let lastPromise; // will be used to chain promises
+    lastPromise = doc.getMetadata().then(function (data) {
+      console.log("# Metadata Is Loaded");
+      console.log("## Info");
+      console.log(JSON.stringify(data.info, null, 2));
+      console.log();
+      if (data.metadata) {
+        console.log("## Metadata");
+        console.log(JSON.stringify(data.metadata.getAll(), null, 2));
+        console.log();
+      }
+    });
+
+    const loadPage = function (pageNum) {
+      return doc.getPage(pageNum).then(function (page) {
+        console.log("# Page " + pageNum);
+        const viewport = page.getViewport({ scale: 1.0 });
+        console.log("Size: " + viewport.width + "x" + viewport.height);
+        return page
+          .getTextContent()
+          .then(function (content) {
+            // Content contains lots of information about the text layout and
+            // styles, but we need only strings at the moment
+            const strings = content.items.map(function (item) {
+              return item.str;
+            });
+            console.log("## Text Content", strings);
+            console.log(strings.join("\n"));
+          })
+          .then(function () {
+            console.log();
+          });
+      });
+    };
+    // Loading of the first page will wait on metadata and subsequent loadings
+    // will wait on the previous pages.
+    for (let i = 1; i <= numPages; i++) {
+      lastPromise = lastPromise.then(loadPage.bind(null, i));
+    }
+    return lastPromise;
+  })
+  .then(
+    function () {
+      console.log("# End of Document");
+    },
+    function (err) {
+      console.error("Error: " + err);
+    }
+  );
