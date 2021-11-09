@@ -1,5 +1,5 @@
 
-# PDF to Text
+# PDF to text
 <img src="https://user-images.githubusercontent.com/4648145/138750839-28ef8239-76e1-49ae-bc68-722d22165eea.png" width="248"> 
 
 PDF to text/TextPosition using the pdf-dist.
@@ -114,6 +114,8 @@ node app.js file='File:///Users/Me/Desktop/book-article-or-whatever.pdf'
 * Your file does not exist. (Try to copy the path from your browser)
 * undefined = Your page does not exist. View the PDF in a browser, search carefully, sometimes there are multiple page numbers on your screen.
 
+## Special thanks
+[Nickmanbear](https://github.com/Nickmanbear)
 
 ## Authors
 ZIMONH
